@@ -28,6 +28,7 @@ module.exports = {
   },
   plugins: ['react'],
   rules: {
+    'linebreak-style': ['error', 'windows'],
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.tsx'] }],
     'react/prop-types': 'off',
     'react/require-default-props': 'off',

@@ -8,6 +8,7 @@ import {
 } from '@apollo/client';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Typography } from '@material-ui/core';
+import Select from 'react-select';
 import Chip from '../../components/Chip';
 
 const client = new ApolloClient({
@@ -26,17 +27,12 @@ const SelectBox: FC = () => {
 
   if (loading) return <LinearProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
-  if (!data) return <Chip label="Weather not found" />;
-  const [metricName] = data.getMetrics;
+  if (!data) return <Chip label="Metric name not found" />;
+
+  const metricName = data.getMetrics;
 
   return (
-    <select name="metricName">
-
-      <option>
-        {metricName}
-      </option>
-
-    </select>
+    <Select isMulti options={metricName.map((name: string) => ({ label: name, value: name }))} />
   );
 };
 

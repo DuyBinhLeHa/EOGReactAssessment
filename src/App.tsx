@@ -7,6 +7,7 @@ import Header from './components/Header';
 import Wrapper from './components/Wrapper';
 import NowWhat from './components/NowWhat';
 import SelectBox from './Features/Graph/SelectBox';
+import Graph from './Features/Graph/Graph';
 
 const theme = createTheme({
   palette: {
@@ -30,6 +31,7 @@ const App = () => (
       <NowWhat />
       <ToastContainer />
       <SelectBox />
+      <Graph />
     </Wrapper>
   </MuiThemeProvider>
 );

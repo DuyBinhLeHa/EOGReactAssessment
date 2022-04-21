@@ -67,7 +67,6 @@ interface GraphProps {
 
 const Graph: FC<GraphProps> = (props) => {
   const input = props.payload;
-
   const { loading, error, data } = useQuery(query, {
     variables: {
       input,
@@ -79,14 +78,16 @@ const Graph: FC<GraphProps> = (props) => {
   if (!data) return <Chip label="Metric name not found" />;
 
   // const measureName = data.getMultipleMeasurements[0].metric;
-  const measureData = data.getMultipleMeasurements[0].measurements;
+  const measureData = [];
+  for (let i = 0; i < data.getMultipleMeasurements.length; i += 1) {
+    measureData[i] = data.getMultipleMeasurements[i].measurements;
+  }
   console.log(measureData);
 
   return (
     <div>
       <ResponsiveContainer width='100%' height={300} min-width={300}>
         <LineChart
-          data={measureData}
           margin={{
             top: 10,
             right: 30,
@@ -94,7 +95,7 @@ const Graph: FC<GraphProps> = (props) => {
             bottom: 30,
           }}
         >
-          <XAxis dataKey="at">
+          <XAxis dataKey="at" allowDuplicatedCategory={false}>
             <Label value="Time" position="bottom" />
           </XAxis>
           <YAxis dataKey="value" type="number" domain={['auto', 'auto']} tickCount={10} yAxisId={1}>
@@ -103,9 +104,52 @@ const Graph: FC<GraphProps> = (props) => {
           <YAxis dataKey="value" type="number" domain={['auto', 'auto']} tickCount={10} yAxisId={2}>
             <Label value="F" position="bottom" />
           </YAxis>
+          <YAxis dataKey="value" type="number" domain={['auto', 'auto']} tickCount={10} yAxisId={3}>
+            <Label value="%" position="bottom" />
+          </YAxis>
           <Tooltip content={<CustomTooltip payload={measureData} />} />
-          <Line type="monotone" dataKey="value" stroke="#82ca9d" dot={false} yAxisId={1} />
-          <Line type="monotone" dataKey="value" stroke="#ccc" dot={false} yAxisId={2} />
+          {
+            measureData[0] ? (
+              <Line type="monotone" data={measureData[0]} dataKey="value" stroke="#008000" dot={false} yAxisId={1} />
+            ) : (
+              <div>&nbsp;</div>
+            )
+          }
+          {
+            measureData[1] ? (
+              <Line type="monotone" data={measureData[1]} dataKey="value" stroke="#FF0000" dot={false} yAxisId={2} />
+            ) : (
+              <div>&nbsp;</div>
+            )
+          }
+          {
+            measureData[2] ? (
+              <Line type="monotone" data={measureData[2]} dataKey="value" stroke="#FFA500" dot={false} yAxisId={2} />
+            ) : (
+              <div>&nbsp;</div>
+            )
+          }
+          {
+            measureData[3] ? (
+              <Line type="monotone" data={measureData[3]} dataKey="value" stroke="#FF1493" dot={false} yAxisId={2} />
+            ) : (
+              <div>&nbsp;</div>
+            )
+          }
+          {
+            measureData[4] ? (
+              <Line type="monotone" data={measureData[4]} dataKey="value" stroke="#800080" dot={false} yAxisId={1} />
+            ) : (
+              <div>&nbsp;</div>
+            )
+          }
+          {
+            measureData[5] ? (
+              <Line type="monotone" data={measureData[5]} dataKey="value" stroke="#C0C0C0" dot={false} yAxisId={3} />
+            ) : (
+              <div>&nbsp;</div>
+            )
+          }
         </LineChart>
       </ResponsiveContainer>
     </div>

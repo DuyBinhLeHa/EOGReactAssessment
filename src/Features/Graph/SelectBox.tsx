@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import {
   ApolloClient,
   ApolloProvider,
@@ -8,13 +8,17 @@ import {
 } from '@apollo/client';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Typography } from '@material-ui/core';
-import Select from 'react-select';
+import Select, { MultiValue } from 'react-select';
 import Chip from '../../components/Chip';
+import Graph from './Graph';
 
 const client = new ApolloClient({
   uri: 'https://react-assessment.herokuapp.com/graphql',
   cache: new InMemoryCache(),
 });
+
+const presentTime = new Date().valueOf();
+const pastTime = 30 * 60000;
 
 const query = gql`
   query {
@@ -22,7 +26,13 @@ const query = gql`
   }
 `;
 
+type SelectValue = {
+  value: string;
+  label: string;
+};
+
 const SelectBox: FC = () => {
+  const [selectOption, setSelectOption] = useState<SelectValue[]>([]);
   const { loading, error, data } = useQuery(query);
 
   if (loading) return <LinearProgress />;
@@ -31,8 +41,34 @@ const SelectBox: FC = () => {
 
   const metricName = data.getMetrics;
 
+  const handleSelectionChange = (newSelections: MultiValue<SelectValue>) => {
+    setSelectOption([...newSelections]);
+  };
+
+  const input = [];
+  for (let i = 0; i < selectOption.length; i += 1) {
+    input.push({
+      metricName: selectOption[i].value,
+      after: presentTime - pastTime,
+      before: presentTime,
+    });
+  }
+
   return (
-    <Select isMulti options={metricName.map((name: string) => ({ label: name, value: name }))} />
+    <div style={{ margin: '3em' }}>
+      <Select
+        isMulti
+        onChange={handleSelectionChange}
+        options={metricName.map((name: string) => ({ label: name, value: name }))}
+      />
+      {
+        selectOption.length === 0 ? (
+          <div>&nbsp;</div>
+        ) : (
+          <Graph payload={input} />
+        )
+      }
+    </div>
   );
 };
 

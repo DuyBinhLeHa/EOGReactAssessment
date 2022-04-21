@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { FC } from 'react';
 import {
   ApolloClient,
@@ -19,41 +20,55 @@ import {
 } from 'recharts';
 import Chip from '../../components/Chip';
 import CustomTooltip from './CustomTooltip';
+import MeasurementInfo from './MeasurementInfo';
 
-const client = new ApolloClient({
+/*const client = new ApolloClient({
   uri: 'https://react-assessment.herokuapp.com/graphql',
   cache: new InMemoryCache(),
-});
+});*/
+
+const presentTime = new Date().valueOf();
+const pastTime = 30 * 60000;
 
 const query = gql`
-query ($input: MeasurementQuery) {
-  getMeasurements(input: $input) {
-    metric
-    at
-    value
-    unit
+  query ($input: [MeasurementQuery]) {
+    getMultipleMeasurements(input: $input) {
+      metric
+      measurements {
+        metric
+        at
+        value
+        unit
+      }
+    }
   }
-}
+`;
+
+const subscription = gql`
+  subscription {
+    newMeasurement {
+      metric
+      at
+      value
+      unit
+    }
+  }
 `;
 
 type GraphData = {
-  metric: string;
-  at: Date;
-  value: number;
-  unit: string;
-};
-type GraphDataResponse = {
-  getMeasurements: GraphData[];
+  metricName: string;
+  after: number;
+  before: number;
 };
 
-const SelectBox: FC = () => {
-  const input = {
-    metricName: 'tubingPressure',
-    after: 1650415491332,
-    before: 1650415654669,
-  };
+interface GraphProps {
+  payload: any;
+}
 
-  const { loading, error, data } = useQuery<GraphDataResponse>(query, {
+const Graph: FC<GraphProps> = (props) => {
+  const input = props.payload;
+
+  const { loading, error, data } = useQuery(query, {
     variables: {
       input,
     },
@@ -63,34 +78,38 @@ const SelectBox: FC = () => {
   if (error) return <Typography color="error">{error}</Typography>;
   if (!data) return <Chip label="Metric name not found" />;
 
-  const measureData = data.getMeasurements;
+  // const measureName = data.getMultipleMeasurements[0].metric;
+  const measureData = data.getMultipleMeasurements[0].measurements;
+  console.log(measureData);
 
   return (
-    <ResponsiveContainer width='100%' height={300} min-width={300}>
-      <LineChart
-        data={measureData}
-        margin={{
-          top: 10,
-          right: 30,
-          left: 20,
-          bottom: 30,
-        }}
-      >
-        <XAxis dataKey="at">
-          <Label value="Time" position="bottom" />
-        </XAxis>
-        <YAxis dataKey="value" type="number" domain={[3.3, 5.6]}>
-          <Label value="PSI" angle={-90} position="left" dy="-10" />
-        </YAxis>
-        <Tooltip content={<CustomTooltip payload={measureData} />} />
-        <Line type="monotone" dataKey="value" stroke="#82ca9d" dot={false} />
-      </LineChart>
-    </ResponsiveContainer>
+    <div>
+      <ResponsiveContainer width='100%' height={300} min-width={300}>
+        <LineChart
+          data={measureData}
+          margin={{
+            top: 10,
+            right: 30,
+            left: 20,
+            bottom: 30,
+          }}
+        >
+          <XAxis dataKey="at">
+            <Label value="Time" position="bottom" />
+          </XAxis>
+          <YAxis dataKey="value" type="number" domain={['auto', 'auto']} tickCount={10} yAxisId={1}>
+            <Label value="PSI" position="bottom" />
+          </YAxis>
+          <YAxis dataKey="value" type="number" domain={['auto', 'auto']} tickCount={10} yAxisId={2}>
+            <Label value="F" position="bottom" />
+          </YAxis>
+          <Tooltip content={<CustomTooltip payload={measureData} />} />
+          <Line type="monotone" dataKey="value" stroke="#82ca9d" dot={false} yAxisId={1} />
+          <Line type="monotone" dataKey="value" stroke="#ccc" dot={false} yAxisId={2} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
-export default () => (
-  <ApolloProvider client={client}>
-    <SelectBox />
-  </ApolloProvider>
-);
+export default Graph;

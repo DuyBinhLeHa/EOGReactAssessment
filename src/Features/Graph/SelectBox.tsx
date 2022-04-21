@@ -11,6 +11,7 @@ import { Typography } from '@material-ui/core';
 import Select, { MultiValue } from 'react-select';
 import Chip from '../../components/Chip';
 import Graph from './Graph';
+import MeasureBoard from './MeasureBoard';
 
 const client = new ApolloClient({
   uri: 'https://react-assessment.herokuapp.com/graphql',
@@ -65,7 +66,12 @@ const SelectBox: FC = () => {
         selectOption.length === 0 ? (
           <div>&nbsp;</div>
         ) : (
-          <Graph payload={input} />
+          <div>
+            {input.map((item: any) => (
+              <MeasureBoard key={item} payload={item.metricName} />
+            ))}
+            <Graph payload={input} />
+          </div>
         )
       }
     </div>

@@ -24,10 +24,12 @@ const CustomTooltip = ({ active, payload }: any) => {
       <div className={classes.customTooltip}>
         <div className={classes.tooltipDetails}>
           <p>Date: {timeLabel}</p>
-          <p className={classes.label}>
-            {payload[0].payload.metric}:&nbsp;
-            {payload[0].payload.value} PSI
-          </p>
+          {payload.map((item: any) => (
+            <p className={classes.label}>
+              {item.payload.metric}:&nbsp;
+              {item.payload.value}
+            </p>
+          ))}
         </div>
       </div>
     );

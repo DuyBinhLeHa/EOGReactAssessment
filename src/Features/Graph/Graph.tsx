@@ -1,11 +1,7 @@
-/* eslint-disable */
 import React, { FC } from 'react';
 import {
-  ApolloClient,
-  ApolloProvider,
   useQuery,
   gql,
-  InMemoryCache,
 } from '@apollo/client';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { Typography } from '@material-ui/core';
@@ -20,15 +16,6 @@ import {
 } from 'recharts';
 import Chip from '../../components/Chip';
 import CustomTooltip from './CustomTooltip';
-import MeasurementInfo from './MeasurementInfo';
-
-/*const client = new ApolloClient({
-  uri: 'https://react-assessment.herokuapp.com/graphql',
-  cache: new InMemoryCache(),
-});*/
-
-const presentTime = new Date().valueOf();
-const pastTime = 30 * 60000;
 
 const query = gql`
   query ($input: [MeasurementQuery]) {
@@ -44,29 +31,13 @@ const query = gql`
   }
 `;
 
-const subscription = gql`
-  subscription {
-    newMeasurement {
-      metric
-      at
-      value
-      unit
-    }
-  }
-`;
-
-type GraphData = {
-  metricName: string;
-  after: number;
-  before: number;
+type GraphProps = {
+  payload: any;
 };
 
-interface GraphProps {
-  payload: any;
-}
-
 const Graph: FC<GraphProps> = (props) => {
-  const input = props.payload;
+  const { payload } = props;
+  const input = payload;
   const { loading, error, data } = useQuery(query, {
     variables: {
       input,
@@ -77,12 +48,27 @@ const Graph: FC<GraphProps> = (props) => {
   if (error) return <Typography color="error">{error}</Typography>;
   if (!data) return <Chip label="Metric name not found" />;
 
-  // const measureName = data.getMultipleMeasurements[0].metric;
-  const measureData = [];
+  const measureData = new Array(6).fill(null);
   for (let i = 0; i < data.getMultipleMeasurements.length; i += 1) {
-    measureData[i] = data.getMultipleMeasurements[i].measurements;
+    if (data.getMultipleMeasurements[i].metric === 'tubingPressure') {
+      measureData.splice(0, 1, data.getMultipleMeasurements[i].measurements);
+    }
+    if (data.getMultipleMeasurements[i].metric === 'waterTemp') {
+      measureData.splice(1, 1, data.getMultipleMeasurements[i].measurements);
+    }
+    if (data.getMultipleMeasurements[i].metric === 'flareTemp') {
+      measureData.splice(2, 1, data.getMultipleMeasurements[i].measurements);
+    }
+    if (data.getMultipleMeasurements[i].metric === 'oilTemp') {
+      measureData.splice(3, 1, data.getMultipleMeasurements[i].measurements);
+    }
+    if (data.getMultipleMeasurements[i].metric === 'casingPressure') {
+      measureData.splice(4, 1, data.getMultipleMeasurements[i].measurements);
+    }
+    if (data.getMultipleMeasurements[i].metric === 'injValveOpen') {
+      measureData.splice(5, 1, data.getMultipleMeasurements[i].measurements);
+    }
   }
-  console.log(measureData);
 
   return (
     <div>
@@ -117,35 +103,35 @@ const Graph: FC<GraphProps> = (props) => {
           }
           {
             measureData[1] ? (
-              <Line type="monotone" data={measureData[1]} dataKey="value" stroke="#FF0000" dot={false} yAxisId={2} />
+              <Line type="monotone" data={measureData[1]} dataKey="value" stroke="#0000FF" dot={false} yAxisId={2} />
             ) : (
               <div>&nbsp;</div>
             )
           }
           {
             measureData[2] ? (
-              <Line type="monotone" data={measureData[2]} dataKey="value" stroke="#FFA500" dot={false} yAxisId={2} />
+              <Line type="monotone" data={measureData[2]} dataKey="value" stroke="#FF0000" dot={false} yAxisId={2} />
             ) : (
               <div>&nbsp;</div>
             )
           }
           {
             measureData[3] ? (
-              <Line type="monotone" data={measureData[3]} dataKey="value" stroke="#FF1493" dot={false} yAxisId={2} />
+              <Line type="monotone" data={measureData[3]} dataKey="value" stroke="#8B4513" dot={false} yAxisId={2} />
             ) : (
               <div>&nbsp;</div>
             )
           }
           {
             measureData[4] ? (
-              <Line type="monotone" data={measureData[4]} dataKey="value" stroke="#800080" dot={false} yAxisId={1} />
+              <Line type="monotone" data={measureData[4]} dataKey="value" stroke="#808080" dot={false} yAxisId={1} />
             ) : (
               <div>&nbsp;</div>
             )
           }
           {
             measureData[5] ? (
-              <Line type="monotone" data={measureData[5]} dataKey="value" stroke="#C0C0C0" dot={false} yAxisId={3} />
+              <Line type="monotone" data={measureData[5]} dataKey="value" stroke="#FFFF00" dot={false} yAxisId={3} />
             ) : (
               <div>&nbsp;</div>
             )
